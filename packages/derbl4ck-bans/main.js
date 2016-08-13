@@ -122,4 +122,3 @@ register('whitelist', (player, steamID) => {
          new RGB(255, 140, 0));
     }
 });
-

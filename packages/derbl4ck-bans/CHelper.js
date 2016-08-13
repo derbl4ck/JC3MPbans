@@ -84,7 +84,14 @@ module.exports = class CHelper {
      * @return {boolean} on the list
      */
     static isIPBanned(IP) {
-        return false;
+        try {
+            const tmp = JSON.parse(fs.readFileSync(this.getPath('IPblacklist'), 'utf-8'));
+
+            if (tmp.indexOf(IP) >= 0) return true;
+            else return false;
+        } catch (ex) {
+            return false;
+        }
     }
     
     /**
