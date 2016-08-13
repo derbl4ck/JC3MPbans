@@ -12,11 +12,29 @@ console.log('[derbl4ck\'s bans] System started');
 process.on('uncaughtException', (err) => {
     console.log('\x1b[31m[derbl4ck\'s bans] An error occurred. Stack trace: \x1b[0m');
     console.log(`\x1b[31m[derbl4ck\'s bans] ${err}\x1b[0m`);
+    process.exit(1);
 });
 
+const fs = require('fs');
+const path = require('path');
 const config = require('./config');
 const CHelper = require('./CHelper');
 const lang = require('./lang');
+
+try {
+    fs.statSync(path.join(__dirname, 'db')).isDirectory();
+} catch (err) {
+    fs.mkdir(path.join(__dirname, 'db'));
+}
+
+const files = ['whitelist', 'IPwhitelist', 'blacklist', 'IPblacklist'];
+
+for (const list of files) {
+    if (!CHelper.fileExist(CHelper.getPath(list))) {
+        console.log(`[derbl4ck's bans] ${list} Store created!`);
+        fs.writeFile(CHelper.getPath(list), '', () => {});
+    }
+}
 
 events.Add('ClientConnected', (client) => {
     if (CHelper.isIPBanned(client.ipAddress)) {
@@ -84,3 +102,24 @@ register('kick', (player, kick, reason) => {
          new RGB(255, 140, 0));
     }
 });
+
+register('whitelist', (player, steamID) => {
+    if (CHelper.isAdmin(player)) {
+        if (typeof steamID === 'undefined') {
+            return player.SendChatMessage('USAGE: /whitelist [steamID]',
+             new RGB(255, 140, 0));
+        }
+
+        if (CHelper.add2Whitelist(steamID)){
+            player.SendChatMessage(lang.cmdwhsuc.replace('[steamID]', steamID),
+             new RGB(255, 140, 0));
+        } else {
+            player.SendChatMessage(lang.errcmd,
+             new RGB(255, 0, 0));
+        }
+    } else {
+        return player.SendChatMessage(lang.playerdontpermission,
+         new RGB(255, 140, 0));
+    }
+});
+
